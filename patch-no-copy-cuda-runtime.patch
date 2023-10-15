@@ -1,0 +1,51 @@
+diff --git a/llm/llama.cpp/generate_linux.go b/llm/llama.cpp/generate_linux.go
+index 07849f8..61dd011 100644
+--- a/llm/llama.cpp/generate_linux.go
++++ b/llm/llama.cpp/generate_linux.go
+@@ -6,13 +6,11 @@ package llm
+ //go:generate git -C ggml apply ../patches/0001-add-detokenize-endpoint.patch
+ //go:generate git -C ggml apply ../patches/0002-34B-model-support.patch
+ //go:generate git -C ggml apply ../patches/0005-ggml-support-CUDA-s-half-type-for-aarch64-1455-2670.patch
+-//go:generate git -C ggml apply ../patches/0001-copy-cuda-runtime-libraries.patch
+ //go:generate cmake -S ggml -B ggml/build/cpu -DLLAMA_K_QUANTS=on
+ //go:generate cmake --build ggml/build/cpu --target server --config Release
+ //go:generate mv ggml/build/cpu/bin/server ggml/build/cpu/bin/ollama-runner
+ 
+ //go:generate git submodule update --force gguf
+-//go:generate git -C gguf apply ../patches/0001-copy-cuda-runtime-libraries.patch
+ //go:generate git -C gguf apply ../patches/0001-remove-warm-up-logging.patch
+ //go:generate cmake -S gguf -B gguf/build/cpu -DLLAMA_K_QUANTS=on
+ //go:generate cmake --build gguf/build/cpu --target server --config Release
+diff --git a/llm/llama.cpp/patches/0001-copy-cuda-runtime-libraries.patch b/llm/llama.cpp/patches/0001-copy-cuda-runtime-libraries.patch
+deleted file mode 100644
+index 1fd0797..0000000
+--- a/llm/llama.cpp/patches/0001-copy-cuda-runtime-libraries.patch
++++ /dev/null
+@@ -1,27 +0,0 @@
+-From 5dd02993e8cc2ce309157736b95bb572f274a3fd Mon Sep 17 00:00:00 2001
+-From: Michael Yang <mxyng@pm.me>
+-Date: Wed, 20 Sep 2023 14:19:52 -0700
+-Subject: [PATCH] copy cuda runtime libraries
+-
+----
+- CMakeLists.txt | 4 ++++
+- 1 file changed, 4 insertions(+)
+-
+-diff --git a/CMakeLists.txt b/CMakeLists.txt
+-index 824d9f2..dd24137 100644
+---- a/CMakeLists.txt
+-+++ b/CMakeLists.txt
+-@@ -274,6 +274,10 @@ if (LLAMA_CUBLAS)
+-             set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart CUDA::cublas CUDA::cublasLt)
+-         endif()
+- 
+-+        configure_file(${CUDAToolkit_LIBRARY_DIR}/libcudart.so ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libcudart.so.${CUDAToolkit_VERSION_MAJOR}.0 COPYONLY)
+-+        configure_file(${CUDAToolkit_LIBRARY_DIR}/libcublas.so ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libcublas.so.${CUDAToolkit_VERSION_MAJOR} COPYONLY)
+-+        configure_file(${CUDAToolkit_LIBRARY_DIR}/libcublasLt.so ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libcublasLt.so.${CUDAToolkit_VERSION_MAJOR} COPYONLY)
+-+
+-     if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+-         # 52 == lowest CUDA 12 standard
+-         # 60 == f16 CUDA intrinsics
+--- 
+-2.42.0
+-
