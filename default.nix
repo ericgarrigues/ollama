@@ -32,15 +32,6 @@ pkgs.buildGoApplication {
     go
   ];
 
-  #propagatedNativeBuildInputs = with pkgs; [
-  #  git 
-  #  gnumake 
-  #  cudaPackages.cuda_cudart
-  #  cudaPackages.libcublas
-  #  cudaPackages.cudatoolkit
-  #  cmake
-  #];
-
   patches = [
    ./patch-no-copy-cuda-runtime.patch
   ];
